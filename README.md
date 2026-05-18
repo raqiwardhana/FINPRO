@@ -267,7 +267,7 @@ identified in dataframes
 
 <img alt="SHAP graph" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/SHAP_Graph.png"/>
 
-- The SHAP results doesn't directly indicate data leakage
+- The SHAP results doesn't directly indicate data leakage.
 - Identified features remain reasonable for an employee attrition problem.
 - Features such as (a)longer work hours, (b)lower satisfaction, (c)lower income, and (d)shorter tenure are common and meaningful rather than suspicious indicators of leakage. 
 
