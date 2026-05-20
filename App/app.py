@@ -2,7 +2,17 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
-import time
+
+def visualize(data):
+    a, b, c= st.columns(3)
+
+    a.metric("Employees", data['EmployeeID'].count(), border=True)
+    b.metric("Attrition Prediction", data['prediction'].value_counts().get("Yes", 0), border=True)
+    c.metric("Average Total Work Hours", round(data['total_work_hours'].mean()), border=True)
+
+    # over_aw, age = st.columns(2)
+
+    # over_aw
 
 def prediction(data):
     model = joblib.load("./Jupnote/my_model.joblib")
@@ -113,8 +123,7 @@ def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_tim
     overwork_days = overwork_days.reset_index(drop=True)
     df_in_out = pd.concat(
     [total_work_hours, average_work_hours, overwork_days],
-    axis=1
-    )
+    axis=1)
 
     df_in_out.columns = ['total_work_hours', 'average_work_hours', 'overwork_days']
     df_in_out = df_in_out.reset_index()
@@ -127,7 +136,9 @@ def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_tim
     final_df = pd.merge(df_general, df_employee, on='EmployeeID')
     final_df = pd.merge(final_df,df_manager, on='EmployeeID')
     final_df = pd.merge(final_df,df_in_out, on='EmployeeID')
-    final_df['Attrition'] = final_df['Attrition'].map({'Yes': 1, 'No': 0})
+    final_df = final_df.fillna(final_df.select_dtypes(include=['object', 'category']).mode().iloc[0])
+    df = final_df.copy()
+    
     final_df['isMale'] = final_df['Gender'].map({'Male': 1, 'Female': 0})
     final_df['overwork'] = final_df['overwork'].map({'Yes': 1, 'No': 0})
 
@@ -148,6 +159,8 @@ def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_tim
     final_df['YearsWithCurrManager_log'] = np.log1p(final_df['YearsWithCurrManager'])
     final_df = final_df.reindex(columns=train_columns, fill_value=0)
     y_pred = model.predict(final_df)
+    df['prediction'] = y_pred
+    df['prediction'] = df['prediction'].map({1: 'Yes', 0: 'No'})
     pred_series = pd.Series(y_pred)
     persentase = pred_series.value_counts(normalize=True) * 100
     persentase = round(persentase[1],2)
@@ -197,6 +210,23 @@ def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_tim
                             margin-bottom: 2px;
                             line-height:0;">Employees are predicted to remain with the company</p>
                       </div>""", unsafe_allow_html=True)
+    visualize(df)
+    col2.write("  ")
+    col2.write(df[['EmployeeID','total_work_hours','Age','YearsAtCompany','MaritalStatus','BusinessTravel','prediction']])
+    
+    @st.cache_data
+    def convert_for_download(df):
+        return df.to_csv().encode("utf-8")
+    
+    csv = convert_for_download(df)
+
+    col2.download_button(
+        label="Download Result",
+        data=csv,
+        file_name="ResultData.csv",
+        mime="text/csv",
+        icon=":material/download:",
+    )
 
 st.set_page_config(
     page_title="Attriction",
@@ -204,9 +234,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# with st.sidebar:
-#     st.title("Attriction")
-#     st.write("Attrition Prediction Application by LogData")
 st.write("# Attriction🚀")
 st.write("Predict your employee attrition now!")
 
@@ -219,7 +246,6 @@ with tab1:
         col1, col2 = st.columns(2)
         
         col1.markdown("**Biodata🙋**")
-        employeeID = col1.text_input("EmployeeID")
         Age = col1.number_input(
             "Age",
             step=1,
@@ -363,8 +389,7 @@ with tab1:
                 "DistanceFromHome": DistanceFromHome,
                 "Education": Education, 
                 "EducationField": EducationField, 
-                "EmployeeCount": EmployeeCount, 
-                "EmployeeID": employeeID, 
+                "EmployeeCount": EmployeeCount,
                 "Gender": Gender,
                 "JobLevel": Joblevel, 
                 "JobRole": JobRole, 
@@ -387,14 +412,8 @@ with tab1:
                 'PerformanceRating': PerformanceRating,
                 'total_work_hours': total_work_hours
             }
-            progress_text = "Calculating Process. Please wait."
-            my_bar = col2.progress(0, text=progress_text)
-            for percent_complete in range(100):
-                time.sleep(0.01)
-                my_bar.progress(percent_complete + 1, text=progress_text)
-            time.sleep(1)
-            my_bar.empty()
-            prediction(data)
+            with col2.spinner("Calculating Process. Please wait."):
+                prediction(data)
 
 with tab2:
     st.header("Group Prediction")
@@ -407,14 +426,67 @@ with tab2:
     df_out_time = col1.file_uploader("Out TIme Data", accept_multiple_files=False, type="csv")
 
     if col1.button("Predict now!", type="primary"):
-        prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time)
+        with col2.spinner("Calculating Process. Please wait."):
+            prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time)
 
 with tab3:
-    st.header("About Us")
-    st.markdown("""Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.  
-    Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.
-                """)
+    st.header("Log Data")
+    st.image("./logo.png", width=200)
+    st.markdown("""
+    At **Log Data**, we believe that data is more than just numbers,  
+    it is the key to smarter decisions, better strategies, and meaningful business growth.
 
+    We are a passionate team of data scientists, analysts, and technology enthusiasts  
+    dedicated to transforming raw data into valuable insights through machine learning,  
+    analytics, and intelligent solutions.
+
+    Our mission is to help businesses make data-driven decisions by providing innovative analytical tools,  
+    predictive models, and interactive applications that simplify complex information into actionable insights.
+
+    """)
+
+    st.divider()
+    st.subheader("What We Do")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        -  Data Analysis & Visualization  
+        -  Machine Learning & Predictive Modeling  
+        -  Business Intelligence Solutions  
+        """)
+
+    with col2:
+        st.markdown("""
+        -  AI-Powered Applications  
+        -  Data-Driven Decision Support  
+        -  Dashboard & Reporting Development  
+        """)
+
+    st.divider()
+
+    st.subheader("Our Vision")
+
+    st.info("""
+    To become a trusted data science partner that empowers organizations  
+    through innovative, accurate, and impactful data solutions.
+    """)
+
+    st.divider()
+
+    st.subheader("Our Mission")
+
+    missions = [
+        "Deliver reliable and scalable data solutions",
+        "Transform complex datasets into meaningful insights",
+        "Support smarter and faster business decisions",
+        "Continuously innovate using modern AI and analytics technologies"
+    ]
+
+    for mission in missions:
+        st.markdown(f"✅ {mission}")
+
+    st.divider()
 st.markdown("""<style>
 .footer {
     position: fixed;
