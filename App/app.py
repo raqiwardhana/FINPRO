@@ -85,8 +85,8 @@ def prediction(data):
                       </div>""", unsafe_allow_html=True)
 
 def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time):
-    model = joblib.load("./Jupnote/my_model.joblib")
-    train_columns = joblib.load("./Jupnote/columns.pkl")
+    model = joblib.load("App/my_model.joblib")
+    train_columns = joblib.load("App/columns.pkl")
     
     df_general = pd.read_csv(df_general)
     df_employee = pd.read_csv(df_employee)
