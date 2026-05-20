@@ -12,7 +12,7 @@ Employee attrition is a universal business challenge that directly affects produ
 - 16.1% attrition per year from total employee in 2015
 - normally attrition rate ranges between 5 to 10% per year
 - estimated attrition cost around INR 263 Million Per Year
-
+ 
 ## Goals
 - Reduce Attrition to 10% in 1 year
 - Early Warning
