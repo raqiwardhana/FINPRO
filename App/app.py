@@ -220,27 +220,44 @@ with tab1:
         
         col1.markdown("**Biodata🙋**")
         employeeID = col1.text_input("EmployeeID")
-        Age = col1.number_input("Age", step=1, min_value=0)
+        Age = col1.number_input(
+            "Age",
+            step=1,
+            min_value=0,
+            help="Input employee age in years")
         Gender = col1.radio(label="Gender",
                             options=["Male","Female"],
                             horizontal=True)
-        Education = col1.select_slider("Education",
-                                       options=[1,2,3,4,5])
+        Education = col1.select_slider("Education Level",
+                                       options=[1,2,3,4,5],
+                                       help="""
+                                        - 1 = Below College
+                                        - 2 = College
+                                        - 3 = Bachelor
+                                        - 4 = Master
+                                        - 5 = Doctor
+                                        """
+                                        )
         EducationField = col1.selectbox("Education Field",
                                         options=['Human Resources','Life Sciences','Marketing','Medical','Technical Degree','Other'])
         MaritalStatus = col1.radio(label="Marital Status",
                         options=['Divorced', 'Married', 'Single'],
                         horizontal=True)
-        DistanceFromHome = col1.number_input('Distance From Home', step=1, min_value=0)
+        DistanceFromHome = col1.number_input('Distance From Home',
+                                                step=1,
+                                                min_value=0,
+                                                help="Distance in KM")
         Department = col1.radio(label="Department",
                                 options=["Human Resources", "Research & Development", "Sales"],
                                 horizontal=True)
         Joblevel = col1.select_slider("Job Level",
-                                      options=[1,2,3,4,5])
+                                      options=[1,2,3,4,5],
+                                      help="Job level at company on a scale of 1 to 5")
         JobRole = col1.selectbox("Job Role",
                                  options=['Healthcare Representative', 'Human Resources', 'Laboratory Technician', 'Manager', 'Manufacturing Director', 'Research Director', 'Research Scientist', 'Sales Executive', 'Sales Representative'])
         BusinessTravel = col1.radio(label= "BusinessTravel",
                                   options=["Non-Travel","Travel_Rarely", "Travel_Frequently"],
+                                  help="How frequently the employees travelled for business purposes in the last year",
                                   format_func=lambda x: {
                                       "Non-Travel": "Non-Travel",
                                       "Travel_Rarely": "Rarely",
@@ -248,38 +265,94 @@ with tab1:
                                       }[x],
                                       horizontal=True)
         EmployeeCount = 1
-        MonthlyIncome = col1.number_input('Monthly income (INR)', step=1, min_value=0)
-        PercentSalaryHike = col1.number_input('Percent Salary Hike', step=1, min_value=11, max_value=25)        
-        NumCompaniesWorked = col1.number_input('Number of Companies Worked', step=1, min_value=1, max_value=9)
+        MonthlyIncome = col1.number_input('Monthly income (INR)',step=1, min_value=0)
+        PercentSalaryHike = col1.number_input('Percent Salary Hike',
+                                                step=1, 
+                                                min_value=11, 
+                                                max_value=25,
+                                                help="Percent salary hike for last year, min value is 11, and max value is 25")        
+        NumCompaniesWorked = col1.number_input('Number of Companies Worked', 
+                                                step=1, 
+                                                min_value=1, 
+                                                max_value=9,
+                                                help="Total number of companies the employee has worked for")
         Over18 = 'Y'
         StandardHours = 8
         StockOptionLevel = col1.select_slider("Stock Option Level",
-                                              options=[0,1,2,3])
-        TotalWorkingYears = col1.number_input('Total Working Years', step=1, min_value=0)
+                                                options=[0,1,2,3],
+                                                help="Stock option level of the employee")
+        TotalWorkingYears = col1.number_input('Total Working Years', 
+                                                step=1, 
+                                                min_value=0,
+                                                help="Total number of years the employee has worked so far")
         TrainingTimesLastYear = col1.select_slider("Training Times Last Year",
-                                     options=[0, 1, 2, 3, 4, 5, 6])
-        YearsAtCompany = col1.number_input('Years At Company', step=1, min_value=0)
-        YearsSinceLastPromotion = col1.number_input('Years Since Last Promotion', step=1, min_value=0) 
-        YearsWithCurrManager = col1.number_input('Years With Curr Manager', step=1, min_value=0)
+                                                    options=[0, 1, 2, 3, 4, 5, 6],
+                                                    help="Number of times training was conducted for this employee last year")
+        YearsAtCompany = col1.number_input('Years At Company', 
+                                            step=1, 
+                                            min_value=0,
+                                            help="Total number of years spent at the company by the employee")
+        YearsSinceLastPromotion = col1.number_input('Years Since Last Promotion', 
+                                                        step=1, 
+                                                        min_value=0,
+                                                        help="Number of years since last promotion") 
+        YearsWithCurrManager = col1.number_input('Years With Curr Manager', 
+                                                    step=1, 
+                                                    min_value=0,
+                                                    help="Number of years since last promotion")
 
         col2.markdown("**Survey Data📝**")
         EnvironmentSatisfaction = col2.select_slider("Environment Satisfaction",
-                                                     options=[1,2,3,4])
+                                                     options=[1,2,3,4],
+                                                     help="""
+                                                     Employee Satisfaction survey for the environment\n
+                                                     - 1 Low
+                                                     - 2 Medium
+                                                     - 3 High
+                                                     - 4 Very High""")
         JobSatisfaction = col2.select_slider("Job Satisfaction",
-                                             options=[1,2,3,4])
+                                                options=[1,2,3,4],
+                                                help="""
+                                                Employee Satisfaction survey for the Job\n
+                                                - 1 Low
+                                                - 2 Medium
+                                                - 3 High
+                                                - 4 Very High
+                                                """)
         WorkLifeBalance = col2.select_slider("Work Life Balance",
-                                             options=[1,2,3,4])
+                                                options=[1,2,3,4],
+                                                help="""
+                                                Employee Satisfaction survey for their Work Life Balance\n
+                                                - 1 Low
+                                                - 2 Medium
+                                                - 3 High
+                                                - 4 Very High
+                                                """)
         
         col2.markdown("**Performance📈**")
         JobInvolvement = col2.select_slider("Job Involvement",
-                                            options=[1,2,3,4])
+                                            options=[1,2,3,4],
+                                            help="""
+                                            Job Involvement Level\n
+                                            - 1 Low
+                                            - 2 Medium
+                                            - 3 High
+                                            - 4 Very High
+                                            """)
         PerformanceRating = col2.select_slider("Performance Rating",
-                                               options=[1,2,3,4])
+                                                options=[1,2,3,4],
+                                                help="""
+                                                Performance Rating for the Employee\n
+                                                - 1 Low
+                                                - 2 Good
+                                                - 3 Excellent
+                                                - 4 Outstanding
+                                                """)
         
         col2.markdown("**Work Hours🕛**")
         total_work_hours = col2.number_input('Total Work Hours', step=1, min_value=0)
 
-        col2.text("Make sure semua kolom sudah diisi dengan nilai yang sesuai sebelum menekan tombol")
+        col2.text("Please make sure all fields are filled in with appropriate values before clicking the button")
         submitted = col2.form_submit_button("Predict now!", type="primary",width="stretch")
         if submitted:
             data = {
