@@ -1,5 +1,7 @@
 # Data Dictionary
 
+[Source: Internal company data ](https://drive.google.com/drive/folders/1K4wW1s68h1yaqAihkGgz9uyMbrYJ8OUN?usp=drive_link)
+
 | Variable                 | Meaning                                                                       | Levels            |
 |:-------------------------|:------------------------------------------------------------------------------|:------------------|
 | Age                      | Age of the employee                                                           |                   |
