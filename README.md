@@ -306,6 +306,7 @@ identified in dataframes
 - Improved workforce stability
 
 # Recommendation
+
 - Use more updated employee data
 - Collect larger and more diverse employee data
 -Improve detection of false negative cases
@@ -328,4 +329,43 @@ Dependencies:
 - `XlsxWriter`
 - `openpyxl`
 - `xlrd`
+
+# Monitoring & Maintenance Strategy
+- Model performance monitoring
+
+    - monitored prediction model regularly using evaluation metrics such as:
+
+        - Precision
+        - Recall
+        - F1-Score
+
+- Data quality monitoring
+
+    Regularly check:
+
+    - No missing values
+    - Correct data formats
+    - Consistent feature distributions
+    - No duplicated records
+
+`Poor data quality may reduce prediction accuracy and lead to unreliable results.`
+
+- Periodic model retraining
+
+    The model should be retrained periodically using newer employee data to maintain relevance and accuracy.
+
+    - Every 3~6 months
+    - When significant performance drops are detected
+    - When company workforce patterns change significantly
+
+
+- System maintenance
+
+    The application and supporting infrastructure should be regularly by:
+    - Updating dependencies and libraries
+    - Fixing bugs and system issues
+    - Monitoring application uptime
+Improving UI/UX when necessary
+
+
 ==W=I=P==W=I=P==W=I=P==
