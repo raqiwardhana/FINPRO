@@ -101,7 +101,7 @@ Employee attrition is a universal business challenge that directly affects produ
 - in_time
 - out_time
 
-<img alt="Dataset ERD" src=https://github.com/raqiwardhana/FINPRO/blob/main/Asset/Dataset_Erd.png />
+<img alt="Dataset ERD" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/Dataset_Erd.png" />
 
 ## Available Features
 
@@ -119,10 +119,10 @@ Employee attrition is a universal business challenge that directly affects produ
 
 # EDA
 - Some data have positive skew distribution
-<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/EDA_Violinplot.png" />
+<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/EDA_Violinplot.png" />
 
 - On the Boxplot some data shown have outliers that need to be handled
-<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/EDA_Boxplot.png" />
+<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/EDA_Boxplot.png" />
 
 - Many of those who do attrition are:
 
