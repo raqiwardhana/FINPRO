@@ -15,8 +15,8 @@ def visualize(data):
     # over_aw
 
 def prediction(data):
-    model = joblib.load("my_model.joblib")
-    train_columns = joblib.load("columns.pkl")
+    model = joblib.load("App/my_model.joblib")
+    train_columns = joblib.load("App/columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -431,7 +431,7 @@ with tab2:
 
 with tab3:
     st.header("Log Data")
-    st.image("logo.png", width=200)
+    st.image("App/logo.png", width=200)
     st.markdown("""
     At **Log Data**, we believe that data is more than just numbers,  
     it is the key to smarter decisions, better strategies, and meaningful business growth.
