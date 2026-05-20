@@ -365,7 +365,14 @@ Dependencies:
     - Updating dependencies and libraries
     - Fixing bugs and system issues
     - Monitoring application uptime
-Improving UI/UX when necessary
+    - Improving UI/UX when necessary
 
+[click here](https://attrictionbylogdata.streamlit.app) to try the ML
 
-==W=I=P==W=I=P==W=I=P==
+# Challenges & Limitation
+
+- Limited dataset
+- Data quality depedency
+- Changing employess behaviour
+- Risk of error prediction
+- Maintenance requirement
