@@ -2,10 +2,11 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
+import time
 
 def prediction(data):
-    model = joblib.load("./my_model.joblib")
-    train_columns = joblib.load("./columns.pkl")
+    model = joblib.load("./Jupnote/my_model.joblib")
+    train_columns = joblib.load("./Jupnote/columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -47,7 +48,7 @@ def prediction(data):
                             text-align: center;
                             margin-top: 0px;
                             margin-bottom: 2px;
-                            line-height:-10;">The employee is predicted to churn.</p>
+                            line-height:-10;">The employee is predicted to leave the company.</p>
                       </div>""", unsafe_allow_html=True)
     else:
         col2.markdown(f"""<div style="background: #029237;
@@ -72,7 +73,130 @@ def prediction(data):
                             margin-bottom: 2px;
                             line-height:0;">The employee is predicted to remain with the company</p>
                       </div>""", unsafe_allow_html=True)
+
+def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time):
+    model = joblib.load("./Jupnote/my_model.joblib")
+    train_columns = joblib.load("./Jupnote/columns.pkl")
     
+    df_general = pd.read_csv(df_general)
+    df_employee = pd.read_csv(df_employee)
+    df_manager = pd.read_csv(df_manager)
+    df_in_time = pd.read_csv(df_in_time)
+    df_out_time = pd.read_csv(df_out_time)
+    cols_to_fix = df_in_time.columns[1:]
+    df_in_time[cols_to_fix] = df_in_time[cols_to_fix].apply(pd.to_datetime)
+    df_out_time[cols_to_fix] = df_out_time[cols_to_fix].apply(pd.to_datetime)
+    work_hours = df_out_time.iloc[:, 1:] - df_in_time.iloc[:, 1:]
+
+    work_hours = (df_out_time.iloc[:, 1:] - df_in_time.iloc[:, 1:]) / pd.Timedelta(hours=1)
+    total_work_hours = work_hours.sum(axis=1)
+    average_work_hours = work_hours.mean(axis=1)
+
+    df_in_time.iloc[:, 1:] = df_in_time.iloc[:, 1:].apply(pd.to_datetime, errors='coerce')
+    df_out_time.iloc[:, 1:] = df_out_time.iloc[:, 1:].apply(pd.to_datetime, errors='coerce')
+
+    in_long = df_in_time.melt(id_vars=['Unnamed: 0'],
+                        var_name='date',
+                        value_name='in_time')
+
+    out_long = df_out_time.melt(id_vars=['Unnamed: 0'],
+                        var_name='date',
+                        value_name='out_time')
+
+    df = in_long.merge(out_long, on=['Unnamed: 0', 'date'])
+    df = df.dropna(subset=['in_time', 'out_time'])
+    df['work_hours'] = (df['out_time'] - df['in_time']).dt.total_seconds() / 3600
+    df = df[df['work_hours'] >= 0]
+    df['is_overwork'] = df['work_hours'] >= 9
+
+    overwork_days = df.groupby('Unnamed: 0')['is_overwork'].sum()
+    overwork_days = overwork_days.reset_index(drop=True)
+    df_in_out = pd.concat(
+    [total_work_hours, average_work_hours, overwork_days],
+    axis=1
+    )
+
+    df_in_out.columns = ['total_work_hours', 'average_work_hours', 'overwork_days']
+    df_in_out = df_in_out.reset_index()
+
+    df_in_out['overwork'] = df_in_out['total_work_hours'].apply(
+    lambda x: 'Yes' if x > 2080 else 'No')
+
+    df_in_out = df_in_out.drop(columns=['index'])
+    df_in_out.insert(0, 'EmployeeID', range(1, len(df_in_out) + 1))
+    final_df = pd.merge(df_general, df_employee, on='EmployeeID')
+    final_df = pd.merge(final_df,df_manager, on='EmployeeID')
+    final_df = pd.merge(final_df,df_in_out, on='EmployeeID')
+    final_df['Attrition'] = final_df['Attrition'].map({'Yes': 1, 'No': 0})
+    final_df['isMale'] = final_df['Gender'].map({'Male': 1, 'Female': 0})
+    final_df['overwork'] = final_df['overwork'].map({'Yes': 1, 'No': 0})
+
+    final_df = pd.get_dummies(final_df, columns=['Department'],dtype=int, drop_first=True)
+    final_df = pd.get_dummies(final_df, columns=['EducationField'],dtype=int, drop_first=True)
+    final_df = pd.get_dummies(final_df, columns=['JobRole'],dtype=int, drop_first=True)
+    final_df = pd.get_dummies(final_df, columns=['MaritalStatus'],dtype=int, drop_first=True)
+    final_df = pd.get_dummies(final_df, columns=['BusinessTravel'],dtype=int, drop_first=True)
+    pd.set_option('display.max_columns', None)
+
+    final_df['DistanceFromHome_log'] = np.log1p(final_df['DistanceFromHome'])
+    final_df['MonthlyIncome_log'] = np.log1p(final_df['MonthlyIncome'])
+    final_df['NumCompaniesWorked_log'] = np.log1p(final_df['NumCompaniesWorked'])
+    final_df['PercentSalaryHike_log'] = np.log1p(final_df['PercentSalaryHike'])
+    final_df['TotalWorkingYears_log'] = np.log1p(final_df['TotalWorkingYears'])
+    final_df['YearsAtCompany_log'] = np.log1p(final_df['YearsAtCompany'])
+    final_df['YearsSinceLastPromotion_log'] = np.log1p(final_df['YearsSinceLastPromotion'])
+    final_df['YearsWithCurrManager_log'] = np.log1p(final_df['YearsWithCurrManager'])
+    final_df = final_df.reindex(columns=train_columns, fill_value=0)
+    y_pred = model.predict(final_df)
+    pred_series = pd.Series(y_pred)
+    persentase = pred_series.value_counts(normalize=True) * 100
+    persentase = round(persentase[1],2)
+    if (persentase>=10) :
+        col2.markdown(f"""<div style="background: #B42700;
+                            height:200px;
+                            border-radius:20px;
+                            color:white;
+                            font-weight:bold;
+                            padding-left:20px">
+                      <h4>Result</h4>
+                      <h1 style="display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            margin-bottom:-25px">{persentase}%</h1>
+                      <p style="display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            margin-top: 0px;
+                            margin-bottom: 2px;
+                            line-height:-10;">Employees are predicted to leave the company.</p>
+                      </div>""", unsafe_allow_html=True)
+    else:
+        col2.markdown(f"""<div style="background: #029237;
+                            height:200px;
+                            border-radius:20px;
+                            color:white;
+                            font-weight:bold;
+                            padding-left:20px">
+                      <h4>Result</h4>
+                      <h1 style="display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            margin-bottom:-25px">{persentase}%</h1>
+                      <p style="display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            text-align: center;
+                            margin-top: 0px;
+                            margin-bottom: 2px;
+                            line-height:0;">Employees are predicted to remain with the company</p>
+                      </div>""", unsafe_allow_html=True)
 
 st.set_page_config(
     page_title="Attriction",
@@ -83,7 +207,7 @@ st.set_page_config(
 # with st.sidebar:
 #     st.title("Attriction")
 #     st.write("Attrition Prediction Application by LogData")
-st.write("# Atriction🚀")
+st.write("# Attriction🚀")
 st.write("Predict your employee attrition now!")
 
 
@@ -124,7 +248,7 @@ with tab1:
                                       }[x],
                                       horizontal=True)
         EmployeeCount = 1
-        MonthlyIncome = col1.number_input('Monthly income', step=1, min_value=0)
+        MonthlyIncome = col1.number_input('Monthly income (INR)', step=1, min_value=0)
         PercentSalaryHike = col1.number_input('Percent Salary Hike', step=1, min_value=11, max_value=25)        
         NumCompaniesWorked = col1.number_input('Number of Companies Worked', step=1, min_value=1, max_value=9)
         Over18 = 'Y'
@@ -190,13 +314,33 @@ with tab1:
                 'PerformanceRating': PerformanceRating,
                 'total_work_hours': total_work_hours
             }
+            progress_text = "Calculating Process. Please wait."
+            my_bar = col2.progress(0, text=progress_text)
+            for percent_complete in range(100):
+                time.sleep(0.01)
+                my_bar.progress(percent_complete + 1, text=progress_text)
+            time.sleep(1)
+            my_bar.empty()
             prediction(data)
 
 with tab2:
     st.header("Group Prediction")
+    col1, col2 = st.columns(2)
+    col1.markdown("**Upload Data(.csv)📤**")
+    df_general = col1.file_uploader("General Data", accept_multiple_files=False, type="csv")
+    df_employee = col1.file_uploader("Survey Data", accept_multiple_files=False, type="csv")
+    df_manager = col1.file_uploader("Performance Data", accept_multiple_files=False, type="csv")
+    df_in_time = col1.file_uploader("In Time Data", accept_multiple_files=False, type="csv")    
+    df_out_time = col1.file_uploader("Out TIme Data", accept_multiple_files=False, type="csv")
+
+    if col1.button("Predict now!", type="primary"):
+        prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time)
 
 with tab3:
     st.header("About Us")
+    st.markdown("""Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.  
+    Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis. Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere. Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos.
+                """)
 
 st.markdown("""<style>
 .footer {
@@ -210,5 +354,5 @@ st.markdown("""<style>
     color: gray;
 }</style>
 <div class="footer">
-© 2026 Attriction by LogData Team | Built with Streamlit
+© 2026 LogData | Built with Streamlit
 </div>""", unsafe_allow_html=True)
