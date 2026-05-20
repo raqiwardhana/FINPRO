@@ -12,7 +12,7 @@ Employee attrition is a universal business challenge that directly affects produ
 - 16.1% attrition per year from total employee in 2015
 - normally attrition rate ranges between 5 to 10% per year
 - estimated attrition cost around INR 263 Million Per Year
- 
+
 ## Goals
 - Reduce Attrition to 10% in 1 year
 - Early Warning
@@ -101,28 +101,28 @@ Employee attrition is a universal business challenge that directly affects produ
 - in_time
 - out_time
 
-<img alt="Dataset ERD" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/Dataset_Erd.png" />
+<img alt="Dataset ERD" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/Dataset_Erd.png/">
 
 ## Available Features
 
-1. **Demographic & Personal**: Age, Gender, Marital Status, Education, Education Field, Distance from Home, Over18, NumCompaniesWorked.
+1. **Demographic & Personal**: Age, Gender, Marital Status, Education, Education Field, Distance from Home, Over18, NumCompaniesWorked
     
-2. **Career Tenure & History**: TotalWorkingYears, YearsAtCompany, YearsSinceLastPromotion, YearsWithCurrManager, TrainingTimesLastYear.
+2. **Career Tenure & History**: TotalWorkingYears, YearsAtCompany, YearsSinceLastPromotion, YearsWithCurrManager, TrainingTimesLastYear
     
-3. **Satisfaction Metrics**: JobSatisfaction, EnvironmentSatisfaction, WorkLifeBalance, JobInvolvement.
+3. **Satisfaction Metrics**: JobSatisfaction, EnvironmentSatisfaction, WorkLifeBalance, JobInvolvement
     
-4. **Job & Role Information**: Department, JobRole, JobLevel, BusinessTravel, EmployeeCount, EmployeeNumber, StandardHours.
+4. **Job & Role Information**: Department, JobRole, JobLevel, BusinessTravel, EmployeeCount, EmployeeNumber, StandardHours
     
-5. **Compensation & Benefits**: MonthlyIncome, PercentSalaryHike, PerformanceRating, StockOptionLevel.
+5. **Compensation & Benefits**: MonthlyIncome, PercentSalaryHike, PerformanceRating, StockOptionLevel
     
-6. **Attendance**: in_time, out_time.
+6. **Attendance**: in_time, out_time
 
 # EDA
 - Some data have positive skew distribution
-<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/EDA_Violinplot.png" />
+<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/EDA_Violinplot.png" />
 
 - On the Boxplot some data shown have outliers that need to be handled
-<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Assets/EDA_Boxplot.png" />
+<img alt="violin plot of EDA" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/EDA_Boxplot.png" />
 
 - Many of those who do attrition are:
 
@@ -251,7 +251,7 @@ identified in dataframes
     - Different retention strategies for each age segment
     - High workload might lead to employees burnout
     - Employee with shorter and longer tenure shown different attrition pattern
-    - the farther have higher resignation chances
+    - the farther the house are the higher resignation chances
     - Company need to review salary compaetitivesness and fairness
 
 ## Final Model Selection
@@ -267,10 +267,65 @@ identified in dataframes
 
 <img alt="SHAP graph" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/SHAP_Graph.png"/>
 
-- The SHAP results doesn't directly indicate data leakage.
+- The SHAP results doesn't directly indicate data leakage
 - Identified features remain reasonable for an employee attrition problem.
 - Features such as (a)longer work hours, (b)lower satisfaction, (c)lower income, and (d)shorter tenure are common and meaningful rather than suspicious indicators of leakage. 
 
+# Error Analysis & Business Impact
+## Error Analysis
+
+- CatBoost Confusion Matrix
+
+||P+|P-|
+| :--- | :--- | :--- | 
+|A+|1470|10|
+|A-|42|242|
+
+- P = Prediction
+- A = Actual
 
 
+- The CatBoost model achieved strong overall performance with low prediction errors.
+- Errors prediction still remain:
+    - False Negative (42): employees who are likely to resign but were not detected by the model.
+    - False Positive (10): employees predicted as attrition risk but actually stayed.
+
+- Minimizing False Negative is important to reduce the risk of losing valuable employees without early intervention.
+- The remaining errors may occur due to overlapping or unseen behavioral patterns in the dataset.
+
+## Business Impact
+
+|Metric|Before|AFter|Improvement|
+| :--- | :--- | :--- | :--- |
+|Attrition Rate|16.1%|10%|![up](https://img.shields.io/badge/▼37.9%-brightgreen)|
+|Attrition Cost|263 Million INR|163.35 Million INR|![up](https://img.shields.io/badge/▼99.65%20Million%20INR-brightgreen)|
+
+- Reduced employee turnover
+- More efficient hiring cost
+- Lower retraining expenses
+- Improved workforce stability
+
+# Recommendation
+- Use more updated employee data
+- Collect larger and more diverse employee data
+-Improve detection of false negative cases
+- perform periodic retraining and real-time monitoring
+
+# Installation and Usage
+
+To run this project, you will need the following Python packages. All dependencies are listed in the `requirements.txt` file.
+
+Dependencies:
+
+- `streamlit`
+- `pandas`
+- `numpy`
+- `plotly`
+- `joblib`
+- `catboost`
+- `shap`
+- `datetime`
+- `XlsxWriter`
+- `openpyxl`
+- `xlrd`
 ==W=I=P==W=I=P==W=I=P==
