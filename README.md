@@ -298,7 +298,7 @@ identified in dataframes
 |Metric|Before|AFter|Improvement|
 | :--- | :--- | :--- | :--- |
 |Attrition Rate|16.1%|10%|![up](https://img.shields.io/badge/change-▼37.9%25-brightgreen)|
-|Attrition Cost|263 Million INR|163.35 Million INR|![up](https://img.shields.io/badge/▼99.65%20Million%20INR-brightgreen)|
+|Attrition Cost|173.7 Million INR|107.9 Million INR|![up](https://img.shields.io/badge/▼65.95%20Million%20INR-brightgreen)|
 
 - Reduced employee turnover
 - More efficient hiring cost
