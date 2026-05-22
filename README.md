@@ -11,7 +11,7 @@ Employee attrition is a universal business challenge that directly affects produ
 ## Problem
 - 16.1% attrition per year from total employee in 2015
 - normally attrition rate ranges between 5 to 10% per year
-- estimated attrition cost around INR 173.7 Million Per Year
+- estimated attrition cost around INR 263 Million Per Year
 
 ## Goals
 - Reduce Attrition to 10% in 1 year
@@ -298,7 +298,7 @@ identified in dataframes
 |Metric|Before|AFter|Improvement|
 | :--- | :--- | :--- | :--- |
 |Attrition Rate|16.1%|10%|![up](https://img.shields.io/badge/change-▼37.9%25-brightgreen)|
-|Attrition Cost|173.7 Million INR|107.9 Million INR|![up](https://img.shields.io/badge/▼65.95%20Million%20INR-brightgreen)|
+|Attrition Cost|263 Million INR|163.35 Million INR|![up](https://img.shields.io/badge/▼99.65%20Million%20INR-brightgreen)|
 
 - Reduced employee turnover
 - More efficient hiring cost
@@ -376,3 +376,12 @@ Dependencies:
 - Changing employess behaviour
 - Risk of error prediction
 - Maintenance requirement
+
+# How to use
+## Personal
+- Enter an individual employee data needed to determine whether the employee will experience attrition. Users can immediately see the prediction result and its probability.
+- If the result box color is red, the employee is predicted to leave the company. If it's green, the employee is predicted to stay.
+
+## Group
+- Uploaded employee group data with the same structure and format as the original dataset.
+- This feature provides an overall attrition prediction summary while also displaying detailed prediction results for each employee individually, including their employee information and predicted attrition status.
