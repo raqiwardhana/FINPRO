@@ -7,6 +7,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(BASE_DIR, "assets", "employee_attrition_template.xlsx")
+logo = os.path.join(BASE_DIR, "assets", "logo.png")
+model = os.path.join(BASE_DIR, "assets", "my_model.joblib")
+column = os.path.join(BASE_DIR, "assets", "columns.pkl")
 
 @st.cache_data
 def load_template():
@@ -167,8 +170,8 @@ def visualize(data):
         st.plotly_chart(fig, width="stretch")
 
 def prediction(data):
-    model = joblib.load("./assets/my_model.joblib")
-    train_columns = joblib.load("./assets/columns.pkl")
+    model = joblib.load(model)
+    train_columns = joblib.load(column)
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -239,8 +242,8 @@ def prediction(data):
 
 def prediction_group(df):
     try:
-        model = joblib.load("./assets/my_model.joblib")
-        train_columns = joblib.load("./assets/columns.pkl")
+        model = joblib.load(model)
+        train_columns = joblib.load(column)
         
         if df.name.endswith(".csv"):
             final_df = pd.read_csv(df)
@@ -567,7 +570,7 @@ with tab2:
     
 with tab3:
     st.header("Log Data")
-    st.image("./assets/logo.png", width=200)
+    st.image(logo, width=200)
     st.markdown("""
     At **Log Data**, we believe that data is more than just numbers,  
     it is the key to smarter decisions, better strategies, and meaningful business growth.
