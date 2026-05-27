@@ -3,5 +3,6 @@ joblib
 pandas
 numpy
 scikit-learn
+catboost
+imbalanced-learn
 plotly
-imblearn
