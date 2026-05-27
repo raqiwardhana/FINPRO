@@ -2,6 +2,11 @@ import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
+import plotly.express as px
+
+@st.cache_data
+def convert_for_download(template):
+    return template.to_csv(index=False).encode("utf-8")  
 
 def visualize(data):
     a, b, c= st.columns(3)
@@ -9,17 +14,129 @@ def visualize(data):
     a.metric("Employees", data['EmployeeID'].count(), border=True)
     b.metric("Attrition Prediction", data['prediction'].value_counts().get("Yes", 0), border=True)
     c.metric("Average Total Work Hours", round(data['total_work_hours'].mean()), border=True)
+    
+    a,b = st.columns([2,1])
+    a.write(data[['EmployeeID','total_work_hours','Age','YearsAtCompany','MaritalStatus','BusinessTravel','prediction']])
+    @st.cache_data
+    def convert_for_download(data):
+        return data.to_csv().encode("utf-8")
+    
+    csv = convert_for_download(data)
 
-    # over_aw, age = st.columns(2)
+    a.download_button(
+        label="Download Result",
+        data=csv,
+        file_name="ResultData.csv",
+        mime="text/csv",
+        icon=":material/download:",
+    )
+    temp_data = data.groupby(['prediction']).agg({'EmployeeID':'nunique'})
+    temp_data = temp_data.reset_index()
+    fig = px.pie(temp_data, 
+                 values='EmployeeID',
+                 names ='prediction', 
+                 title="Employees per Attrition Prediction",
+                 color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"]
+    )
+    fig.update_layout(
+        title_x=0.25
+    )
+    b.plotly_chart(fig, width="stretch")
+    
+    a, b, c= st.columns(3)
+    with a.container(border=True):
+        temp_data = data.groupby(['Department','prediction']).agg({'EmployeeID':'nunique'})
+        temp_data = temp_data.reset_index()
+        temp_data = temp_data.sort_values(by='EmployeeID')
+        fig = px.bar(temp_data, 
+                    x="Department", 
+                    y="EmployeeID", 
+                    color='prediction',
+                    color_discrete_sequence=["#B42700" , "#008AB4", "#008AB4"],
+                    title="Attrition Employee Prediction per Department",
+                    barmode="group")
+        st.plotly_chart(fig, width="stretch")
 
-    # over_aw
+    with b.container(border=True):
+        temp_data = data.groupby(['EducationField','prediction']).agg({'EmployeeID':'nunique'})
+        temp_data = temp_data.reset_index()
+        temp_data2 = data.groupby(['EducationField']).agg({'EmployeeID':'nunique'})
+        temp_data2 = temp_data2.reset_index()
+        temp_data = pd.merge(temp_data, temp_data2, on='EducationField')
+        temp_data['Average'] = temp_data['EmployeeID_x']/temp_data['EmployeeID_y']
+        temp_data = temp_data.sort_values(by='Average', ascending=False)
+
+        fig = px.bar(temp_data, 
+                    x="Average", 
+                    y="EducationField", 
+                    color='prediction',
+                    color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
+                    title="Average Attrition Prediction per Education Field")
+        st.plotly_chart(fig, width="stretch")
+
+    with c.container(border=True):
+        fig = px.scatter(data, 
+                        x="Age", 
+                        y="total_work_hours", 
+                        color='prediction',
+                        color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
+                        title="Total Work Hours and Age per Business Travel")
+        
+        st.plotly_chart(fig, width="stretch")
+    
+    with a.container(border=True):
+        temp_data = data.groupby(['BusinessTravel','prediction']).agg({'EmployeeID':'nunique'})
+        temp_data = temp_data.reset_index()
+        temp_data2 = data.groupby(['BusinessTravel']).agg({'EmployeeID':'nunique'})
+        temp_data2 = temp_data2.reset_index()
+        temp_data = pd.merge(temp_data, temp_data2, on='BusinessTravel')
+        temp_data['Average'] = temp_data['EmployeeID_x']/temp_data['EmployeeID_y']
+        temp_data = temp_data.sort_values(by='Average', ascending=False)
+        fig = px.bar(temp_data, 
+                    x="BusinessTravel", 
+                    y="Average", 
+                    color='prediction',
+                    color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
+                    title="Average Attrition Prediction per Business Travel")
+        st.plotly_chart(fig, width="stretch")
+    
+    with b.container(border=True):
+        temp_data = data.groupby(['MaritalStatus','prediction']).agg({'EmployeeID':'nunique'})
+        temp_data = temp_data.reset_index()
+        temp_data2 = data.groupby(['MaritalStatus']).agg({'EmployeeID':'nunique'})
+        temp_data2 = temp_data2.reset_index()
+        temp_data = pd.merge(temp_data, temp_data2, on='MaritalStatus')
+        temp_data['Average'] = temp_data['EmployeeID_x']/temp_data['EmployeeID_y']
+        temp_data = temp_data.sort_values(by='Average', ascending=False)
+
+        fig = px.bar(temp_data, 
+                    x="Average", 
+                    y="MaritalStatus", 
+                    color='prediction',
+                    color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
+                    title="Average Attrition Prediction per Business Travel")
+        st.plotly_chart(fig, width="stretch")
+    
+    with c.container(border=True):
+        temp_data = data.groupby(['JobRole','prediction']).agg({'EmployeeID':'nunique'})
+        temp_data = temp_data.reset_index()
+        temp_data = temp_data.sort_values(by='EmployeeID')
+        fig = px.bar(temp_data, 
+                    x="EmployeeID", 
+                    y="JobRole", 
+                    color='prediction',
+                    color_discrete_sequence=["#B42700" , "#008AB4", "#008AB4"],
+                    title="Attrition Employee Prediction per Job Role",
+                    barmode="group")
+        st.plotly_chart(fig, width="stretch")
 
 def prediction(data):
-    model = joblib.load("./my_model.joblib")
-    train_columns = joblib.load("./columns.pkl")
+    model = joblib.load("./Jupnote/my_model.joblib")
+    train_columns = joblib.load("./Jupnote/columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
+    
     df['DistanceFromHome_log'] = np.log1p(df['DistanceFromHome'])
     df['MonthlyIncome_log'] = np.log1p(df['MonthlyIncome'])
     df['NumCompaniesWorked_log'] = np.log1p(df['NumCompaniesWorked'])
@@ -84,149 +201,101 @@ def prediction(data):
                             line-height:0;">The employee is predicted to remain with the company</p>
                       </div>""", unsafe_allow_html=True)
 
-def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time):
-    model = joblib.load("./my_model.joblib")
-    train_columns = joblib.load("./columns.pkl")
-    
-    df_general = pd.read_csv(df_general)
-    df_employee = pd.read_csv(df_employee)
-    df_manager = pd.read_csv(df_manager)
-    df_in_time = pd.read_csv(df_in_time)
-    df_out_time = pd.read_csv(df_out_time)
-    cols_to_fix = df_in_time.columns[1:]
-    df_in_time[cols_to_fix] = df_in_time[cols_to_fix].apply(pd.to_datetime)
-    df_out_time[cols_to_fix] = df_out_time[cols_to_fix].apply(pd.to_datetime)
-    work_hours = df_out_time.iloc[:, 1:] - df_in_time.iloc[:, 1:]
+def prediction_group(df):
+    try:
+        model = joblib.load("./Jupnote/my_model.joblib")
+        train_columns = joblib.load("./Jupnote/columns.pkl")
+        
+        final_df = pd.read_csv(df)
+        if((final_df["EmployeeID"].iloc[[0]].values[0]) == "Id Number"):
+            final_df.drop(0, inplace=True)
+            final_df = final_df.reset_index(drop=True)
+        
+        df = final_df.copy()
 
-    work_hours = (df_out_time.iloc[:, 1:] - df_in_time.iloc[:, 1:]) / pd.Timedelta(hours=1)
-    total_work_hours = work_hours.sum(axis=1)
-    average_work_hours = work_hours.mean(axis=1)
+        final_df['isMale'] = final_df['Gender'].map({'Male': 1, 'Female': 0})
 
-    df_in_time.iloc[:, 1:] = df_in_time.iloc[:, 1:].apply(pd.to_datetime, errors='coerce')
-    df_out_time.iloc[:, 1:] = df_out_time.iloc[:, 1:].apply(pd.to_datetime, errors='coerce')
+        final_df = pd.get_dummies(final_df, columns=['Department'],dtype=int, drop_first=True)
+        final_df = pd.get_dummies(final_df, columns=['EducationField'],dtype=int, drop_first=True)
+        final_df = pd.get_dummies(final_df, columns=['JobRole'],dtype=int, drop_first=True)
+        final_df = pd.get_dummies(final_df, columns=['MaritalStatus'],dtype=int, drop_first=True)
+        final_df = pd.get_dummies(final_df, columns=['BusinessTravel'],dtype=int, drop_first=True)
+        pd.set_option('display.max_columns', None)
 
-    in_long = df_in_time.melt(id_vars=['Unnamed: 0'],
-                        var_name='date',
-                        value_name='in_time')
+        final_df['DistanceFromHome_log'] = np.log1p(final_df['DistanceFromHome'])
+        final_df['MonthlyIncome_log'] = np.log1p(final_df['MonthlyIncome'])
+        final_df['NumCompaniesWorked_log'] = np.log1p(final_df['NumCompaniesWorked'])
+        final_df['PercentSalaryHike_log'] = np.log1p(final_df['PercentSalaryHike'])
+        final_df['TotalWorkingYears_log'] = np.log1p(final_df['TotalWorkingYears'])
+        final_df['YearsAtCompany_log'] = np.log1p(final_df['YearsAtCompany'])
+        final_df['YearsSinceLastPromotion_log'] = np.log1p(final_df['YearsSinceLastPromotion'])
+        final_df['YearsWithCurrManager_log'] = np.log1p(final_df['YearsWithCurrManager'])
+        
+        final_df = final_df.reindex(columns=train_columns, fill_value=0)
+        y_pred = model.predict(final_df)
+        df['prediction'] = y_pred
+        df['prediction'] = df['prediction'].map({1: 'Yes', 0: 'No'})
+        pred_series = pd.Series(y_pred)
+        persentase = pred_series.value_counts(normalize=True) * 100
+        persentase = round(persentase[1],2)
+        
+        if (persentase>=10) :
+            col2.markdown(f"""<div style="background: #B42700;
+                                height:200px;
+                                border-radius:20px;
+                                color:white;
+                                font-weight:bold;
+                                padding-left:20px">
+                        <h4>Result</h4>
+                        <h1 style="display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                text-align: center;
+                                margin-bottom:-25px">{persentase}%</h1>
+                        <p style="display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                text-align: center;
+                                margin-top: 0px;
+                                margin-bottom: 2px;
+                                line-height:-10;">Employees are predicted to leave the company.</p>
+                        </div>""", unsafe_allow_html=True)
+        else:
+            col2.markdown(f"""<div style="background: #029237;
+                                height:200px;
+                                border-radius:20px;
+                                color:white;
+                                font-weight:bold;
+                                padding-left:20px">
+                        <h4>Result</h4>
+                        <h1 style="display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                text-align: center;
+                                margin-bottom:-25px">{persentase}%</h1>
+                        <p style="display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                text-align: center;
+                                margin-top: 0px;
+                                margin-bottom: 2px;
+                                line-height:0;">Employees are predicted to remain with the company</p>
+                        </div>""", unsafe_allow_html=True)
+        visualize(df)
 
-    out_long = df_out_time.melt(id_vars=['Unnamed: 0'],
-                        var_name='date',
-                        value_name='out_time')
+    except TypeError:
+        st.error("Failed: Please fill the data using the provided template format.")
 
-    df = in_long.merge(out_long, on=['Unnamed: 0', 'date'])
-    df = df.dropna(subset=['in_time', 'out_time'])
-    df['work_hours'] = (df['out_time'] - df['in_time']).dt.total_seconds() / 3600
-    df = df[df['work_hours'] >= 0]
-    df['is_overwork'] = df['work_hours'] >= 9
+    except ValueError:
+        st.error("Failed: Please fill the data using the provided template format.")
 
-    overwork_days = df.groupby('Unnamed: 0')['is_overwork'].sum()
-    overwork_days = overwork_days.reset_index(drop=True)
-    df_in_out = pd.concat(
-    [total_work_hours, average_work_hours, overwork_days],
-    axis=1)
+    except Exception as e:
+        st.exception(e)
 
-    df_in_out.columns = ['total_work_hours', 'average_work_hours', 'overwork_days']
-    df_in_out = df_in_out.reset_index()
-
-    df_in_out['overwork'] = df_in_out['total_work_hours'].apply(
-    lambda x: 'Yes' if x > 2080 else 'No')
-
-    df_in_out = df_in_out.drop(columns=['index'])
-    df_in_out.insert(0, 'EmployeeID', range(1, len(df_in_out) + 1))
-    final_df = pd.merge(df_general, df_employee, on='EmployeeID')
-    final_df = pd.merge(final_df,df_manager, on='EmployeeID')
-    final_df = pd.merge(final_df,df_in_out, on='EmployeeID')
-    final_df = final_df.fillna(final_df.select_dtypes(include=['object', 'category']).mode().iloc[0])
-    df = final_df.copy()
-    
-    final_df['isMale'] = final_df['Gender'].map({'Male': 1, 'Female': 0})
-    final_df['overwork'] = final_df['overwork'].map({'Yes': 1, 'No': 0})
-
-    final_df = pd.get_dummies(final_df, columns=['Department'],dtype=int, drop_first=True)
-    final_df = pd.get_dummies(final_df, columns=['EducationField'],dtype=int, drop_first=True)
-    final_df = pd.get_dummies(final_df, columns=['JobRole'],dtype=int, drop_first=True)
-    final_df = pd.get_dummies(final_df, columns=['MaritalStatus'],dtype=int, drop_first=True)
-    final_df = pd.get_dummies(final_df, columns=['BusinessTravel'],dtype=int, drop_first=True)
-    pd.set_option('display.max_columns', None)
-
-    final_df['DistanceFromHome_log'] = np.log1p(final_df['DistanceFromHome'])
-    final_df['MonthlyIncome_log'] = np.log1p(final_df['MonthlyIncome'])
-    final_df['NumCompaniesWorked_log'] = np.log1p(final_df['NumCompaniesWorked'])
-    final_df['PercentSalaryHike_log'] = np.log1p(final_df['PercentSalaryHike'])
-    final_df['TotalWorkingYears_log'] = np.log1p(final_df['TotalWorkingYears'])
-    final_df['YearsAtCompany_log'] = np.log1p(final_df['YearsAtCompany'])
-    final_df['YearsSinceLastPromotion_log'] = np.log1p(final_df['YearsSinceLastPromotion'])
-    final_df['YearsWithCurrManager_log'] = np.log1p(final_df['YearsWithCurrManager'])
-    final_df = final_df.reindex(columns=train_columns, fill_value=0)
-    y_pred = model.predict(final_df)
-    df['prediction'] = y_pred
-    df['prediction'] = df['prediction'].map({1: 'Yes', 0: 'No'})
-    pred_series = pd.Series(y_pred)
-    persentase = pred_series.value_counts(normalize=True) * 100
-    persentase = round(persentase[1],2)
-    if (persentase>=10) :
-        col2.markdown(f"""<div style="background: #B42700;
-                            height:200px;
-                            border-radius:20px;
-                            color:white;
-                            font-weight:bold;
-                            padding-left:20px">
-                      <h4>Result</h4>
-                      <h1 style="display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            text-align: center;
-                            margin-bottom:-25px">{persentase}%</h1>
-                      <p style="display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            text-align: center;
-                            margin-top: 0px;
-                            margin-bottom: 2px;
-                            line-height:-10;">Employees are predicted to leave the company.</p>
-                      </div>""", unsafe_allow_html=True)
-    else:
-        col2.markdown(f"""<div style="background: #029237;
-                            height:200px;
-                            border-radius:20px;
-                            color:white;
-                            font-weight:bold;
-                            padding-left:20px">
-                      <h4>Result</h4>
-                      <h1 style="display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            text-align: center;
-                            margin-bottom:-25px">{persentase}%</h1>
-                      <p style="display: flex;
-                            flex-direction: column;
-                            justify-content: center;
-                            align-items: center;
-                            text-align: center;
-                            margin-top: 0px;
-                            margin-bottom: 2px;
-                            line-height:0;">Employees are predicted to remain with the company</p>
-                      </div>""", unsafe_allow_html=True)
-    visualize(df)
-    col2.write("  ")
-    col2.write(df[['EmployeeID','total_work_hours','Age','YearsAtCompany','MaritalStatus','BusinessTravel','prediction']])
-    
-    @st.cache_data
-    def convert_for_download(df):
-        return df.to_csv().encode("utf-8")
-    
-    csv = convert_for_download(df)
-
-    col2.download_button(
-        label="Download Result",
-        data=csv,
-        file_name="ResultData.csv",
-        mime="text/csv",
-        icon=":material/download:",
-    )
 
 st.set_page_config(
     page_title="Attriction",
@@ -238,11 +307,11 @@ st.write("# Attriction🚀")
 st.write("Predict your employee attrition now!")
 
 
-tab1, tab2, tab3 = st.tabs(["Personal", "Group", "About Us"])
+tab1, tab2, tab3 = st.tabs(["Personal", "Batch", "About Us"])
 
 with tab1:
     st.header("Personal Prediction")
-    with st.form("personal", clear_on_submit=True):
+    with st.form("personal"):
         col1, col2 = st.columns(2)
         
         col1.markdown("**Biodata🙋**")
@@ -378,21 +447,16 @@ with tab1:
         col2.markdown("**Work Hours🕛**")
         total_work_hours = col2.number_input('Total Work Hours', step=1, min_value=0)
 
-        col2.text("Please make sure all fields are filled in with appropriate values before clicking the button")
-
-        button_col1, button_col2= col2.columns(2)
-
-        submitted = button_col1.form_submit_button(
-            "Predict now!",
-            type="primary",
-            use_container_width=True
-            )
         
+        col2.text("Please make sure all fields are filled in with appropriate values before clicking the button")
+        button_col1, button_col2 = col2.columns(2)
+
+        submitted = button_col1.form_submit_button("Predict now!", type="primary",width="stretch")        
         reset = button_col2.form_submit_button(
             "Reset",
-            use_container_width=True
+            width="stretch"
         )
-        
+
         if reset:
             st.rerun()
         
@@ -406,7 +470,6 @@ with tab1:
                 "Education": Education, 
                 "EducationField": EducationField, 
                 "EmployeeCount": EmployeeCount,
-                "Gender": Gender,
                 "JobLevel": Joblevel, 
                 "JobRole": JobRole, 
                 "MaritalStatus": MaritalStatus, 
@@ -432,55 +495,58 @@ with tab1:
                 prediction(data)
 
 with tab2:
-    st.header("Group Prediction")
-    col1, col2 = st.columns(2)
-    col1.markdown("**Upload Data(.csv)📤**")
-    template_df = pd.DataFrame({
-        "EmployeeID": [1],
-        "Age": [30],
-        "Gender": ["Male"],
-        "Department": ["Sales"],
-        "DistanceFromHome": [5],
-        "Education": [3],
-        "EducationField": ["Marketing"],
-        "JobLevel": [2],
-        "JobRole": ["Sales Executive"],
-        "MaritalStatus": ["Single"],
-        "MonthlyIncome": [5000],
-        "NumCompaniesWorked": [2],
-        "PercentSalaryHike": [15],
-        "StockOptionLevel": [1],
-        "TotalWorkingYears": [8],
-        "TrainingTimesLastYear": [2],
-        "YearsAtCompany": [5],
-        "YearsSinceLastPromotion": [1],
-        "YearsWithCurrManager": [3],
-        "EnvironmentSatisfaction": [3],
-        "JobSatisfaction": [4],
-        "WorkLifeBalance": [3],
-        "JobInvolvement": [3],
-        "PerformanceRating": [3],
-        "total_work_hours": [2100]
+    st.header("Bulky Prediction")
+    col1, col2 = st.columns(2)    
+    col1.text("Before starting the prediction, make sure your data structure matches this template.")
+    data_template = pd.DataFrame({
+        "EmployeeID": ["Id Number"],
+        "Age": ["Number"],
+        "BusinessTravel": ["Non-Travel/Travel_Rarely/Travel_Frequently"],
+        "Gender": ["Male/Female"],
+        "Department": ["Human Resources/Research & Development/Sales"], 
+        "DistanceFromHome": ["Number"],
+        "Education": ["Number 1-5"], 
+        "EducationField": ['Human Resources/Life Sciences/Marketing/Medical/Technical Degree/Other'], 
+        "EmployeeCount": ["Number"],
+        "JobLevel": ["Number 1-5"], 
+        "JobRole": ['Healthcare Representative/Human Resources/Laboratory Technician/Manager/Manufacturing Director/Research Director/Research Scientist/Sales Executive/Sales Representative'], 
+        "MaritalStatus": ['Divorced/Married/Single'], 
+        "MonthlyIncome": ["Number"],
+        "NumCompaniesWorked": ["Number"], 
+        "PercentSalaryHike": ["Number 11-25"],
+        "StockOptionLevel": ["Number 0-3"],
+        "TotalWorkingYears": ["Number"], 
+        "TrainingTimesLastYear": ["Number"],
+        "YearsAtCompany": ["Number"], 
+        "YearsSinceLastPromotion": ["Number"], 
+        "YearsWithCurrManager": ["Number"],
+        'EnvironmentSatisfaction': ["Number 1-5"], 
+        'JobSatisfaction': ["Number 1-5"],
+        'WorkLifeBalance': ["Number 1-5"],
+        'JobInvolvement': ["Number 1-5"], 
+        'PerformanceRating': ["Number 1-5"],
+        'total_work_hours': ["Number"]
     })
-
-    csv_template = template_df.to_csv(index=False).encode('utf-8')
-
+    csv_template = data_template.to_csv(index=False).encode('utf-8')
     col1.download_button(
-        label="📥 Download Template CSV",
+        label="Download Template 📥",
         data=csv_template,
-        file_name="employee_template.csv",
-        mime="text/csv"
+        file_name="TemplateData.csv",
+        mime="text/csv",
+        icon=":material/download:",
     )
 
-    df = col1.file_uploader(
-        "Upload Employee Data",
-        accept_multiple_files=False,
-        type="csv"
-    )
+    if "data_prediksi" not in st.session_state:
+        st.session_state.data_prediksi = None
+    
+    df = col1.file_uploader("Upload data for prediction📥", accept_multiple_files=False, type="csv")
 
-    if col1.button("Predict now!", type="primary"):
-        prediction_group(df)
+    if df is not None:
+        if col1.button("Predict now!", type="primary"):
+            with col1.spinner("Calculating Process. Please wait."):
+                prediction_group(df)
 
+    
 with tab3:
     st.header("Log Data")
     st.image("./logo.png", width=200)
