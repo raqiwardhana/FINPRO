@@ -6,3 +6,4 @@ scikit-learn
 catboost
 imbalanced-learn
 plotly
+openpyxl
