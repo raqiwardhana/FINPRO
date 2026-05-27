@@ -15,8 +15,8 @@ def visualize(data):
     # over_aw
 
 def prediction(data):
-    model = joblib.load("./Jupnote/my_model.joblib")
-    train_columns = joblib.load("./Jupnote/columns.pkl")
+    model = joblib.load("./my_model.joblib")
+    train_columns = joblib.load("./columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -85,8 +85,8 @@ def prediction(data):
                       </div>""", unsafe_allow_html=True)
 
 def prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time):
-    model = joblib.load("./Jupnote/my_model.joblib")
-    train_columns = joblib.load("./Jupnote/columns.pkl")
+    model = joblib.load("./my_model.joblib")
+    train_columns = joblib.load("./columns.pkl")
     
     df_general = pd.read_csv(df_general)
     df_employee = pd.read_csv(df_employee)
@@ -242,7 +242,7 @@ tab1, tab2, tab3 = st.tabs(["Personal", "Group", "About Us"])
 
 with tab1:
     st.header("Personal Prediction")
-    with st.form("personal"):
+    with st.form("personal", clear_on_submit=True):
         col1, col2 = st.columns(2)
         
         col1.markdown("**Biodata🙋**")
@@ -379,7 +379,23 @@ with tab1:
         total_work_hours = col2.number_input('Total Work Hours', step=1, min_value=0)
 
         col2.text("Please make sure all fields are filled in with appropriate values before clicking the button")
-        submitted = col2.form_submit_button("Predict now!", type="primary",width="stretch")
+
+        button_col1, button_col2= col2.columns(2)
+
+        submitted = button_col1.form_submit_button(
+            "Predict now!",
+            type="primary",
+            use_container_width=True
+            )
+        
+        reset = button_col2.form_submit_button(
+            "Reset",
+            use_container_width=True
+        )
+        
+        if reset:
+            st.rerun()
+        
         if submitted:
             data = {
                 "Age": Age,
@@ -419,15 +435,51 @@ with tab2:
     st.header("Group Prediction")
     col1, col2 = st.columns(2)
     col1.markdown("**Upload Data(.csv)📤**")
-    df_general = col1.file_uploader("General Data", accept_multiple_files=False, type="csv")
-    df_employee = col1.file_uploader("Survey Data", accept_multiple_files=False, type="csv")
-    df_manager = col1.file_uploader("Performance Data", accept_multiple_files=False, type="csv")
-    df_in_time = col1.file_uploader("In Time Data", accept_multiple_files=False, type="csv")    
-    df_out_time = col1.file_uploader("Out TIme Data", accept_multiple_files=False, type="csv")
+    template_df = pd.DataFrame({
+        "EmployeeID": [1],
+        "Age": [30],
+        "Gender": ["Male"],
+        "Department": ["Sales"],
+        "DistanceFromHome": [5],
+        "Education": [3],
+        "EducationField": ["Marketing"],
+        "JobLevel": [2],
+        "JobRole": ["Sales Executive"],
+        "MaritalStatus": ["Single"],
+        "MonthlyIncome": [5000],
+        "NumCompaniesWorked": [2],
+        "PercentSalaryHike": [15],
+        "StockOptionLevel": [1],
+        "TotalWorkingYears": [8],
+        "TrainingTimesLastYear": [2],
+        "YearsAtCompany": [5],
+        "YearsSinceLastPromotion": [1],
+        "YearsWithCurrManager": [3],
+        "EnvironmentSatisfaction": [3],
+        "JobSatisfaction": [4],
+        "WorkLifeBalance": [3],
+        "JobInvolvement": [3],
+        "PerformanceRating": [3],
+        "total_work_hours": [2100]
+    })
+
+    csv_template = template_df.to_csv(index=False).encode('utf-8')
+
+    col1.download_button(
+        label="📥 Download Template CSV",
+        data=csv_template,
+        file_name="employee_template.csv",
+        mime="text/csv"
+    )
+
+    df = col1.file_uploader(
+        "Upload Employee Data",
+        accept_multiple_files=False,
+        type="csv"
+    )
 
     if col1.button("Predict now!", type="primary"):
-        with col2.spinner("Calculating Process. Please wait."):
-            prediction_group(df_general, df_employee, df_manager, df_in_time, df_out_time)
+        prediction_group(df)
 
 with tab3:
     st.header("Log Data")
