@@ -8,8 +8,9 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 @st.cache_data
-def convert_for_download(template):
-    return template.to_csv(index=False).encode("utf-8")  
+def load_template():
+    with open("./template/employee_attrition_template.xlsx", "rb") as f:
+        return f.read() 
 
 def visualize(data):
     a, b, c= st.columns(3)
@@ -83,7 +84,7 @@ def visualize(data):
                         y="total_work_hours", 
                         color='prediction',
                         color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
-                        title="Total Work Hours and Age per Business Travel")
+                        title="Attrition Prediction per Total Work Hours and Age")
         
         st.plotly_chart(fig, width="stretch")
     
@@ -117,7 +118,7 @@ def visualize(data):
                     y="MaritalStatus", 
                     color='prediction',
                     color_discrete_sequence=["#008AB4" , "#B42700", "#008AB4"],
-                    title="Average Attrition Prediction per Business Travel")
+                    title="Average Attrition Prediction per Marital Status")
         st.plotly_chart(fig, width="stretch")
     
     with c.container(border=True):
@@ -134,8 +135,8 @@ def visualize(data):
         st.plotly_chart(fig, width="stretch")
 
 def prediction(data):
-    model = joblib.load("./Jupnote/my_model.joblib")
-    train_columns = joblib.load("./Jupnote/columns.pkl")
+    model = joblib.load("./my_model.joblib")
+    train_columns = joblib.load("./columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -206,10 +207,19 @@ def prediction(data):
 
 def prediction_group(df):
     try:
-        model = joblib.load("./Jupnote/my_model.joblib")
-        train_columns = joblib.load("./Jupnote/columns.pkl")
+        model = joblib.load("./my_model.joblib")
+        train_columns = joblib.load("./columns.pkl")
         
-        final_df = pd.read_csv(df)
+        if df.name.endswith(".csv"):
+            final_df = pd.read_csv(df)
+
+        elif df.name.endswith(".xlsx"):
+            final_df = pd.read_excel(df, sheet_name="Template")
+
+        else:
+            st.error("Unsupported file format")
+            return
+
         if((final_df["EmployeeID"].iloc[[0]].values[0]) == "Id Number"):
             final_df.drop(0, inplace=True)
             final_df = final_df.reset_index(drop=True)
@@ -288,13 +298,48 @@ def prediction_group(df):
                                 margin-bottom: 2px;
                                 line-height:0;">Employees are predicted to remain with the company</p>
                         </div>""", unsafe_allow_html=True)
+        
+        # =========================
+        # ESTIMATED ATTRITION LOSS
+        # =========================
+
+        attrition_count = (y_pred == 1).sum()
+
+        avg_monthly_income = df['MonthlyIncome'].mean()
+        avg_annual_salary = avg_monthly_income * 12
+
+        replacement_cost_per_employee = avg_annual_salary * 0.33
+
+        estimated_loss = attrition_count * replacement_cost_per_employee
+
+        st.divider()
+        st.subheader("Estimated Attrition Loss")
+
+        col_a, col_b = st.columns(2)
+
+        col_a.metric(
+            "**Average Annual Salary**",
+            f"INR {avg_annual_salary:,.2f}"
+        )
+
+        col_b.metric(
+            "**Estimated Attrition Cost Loss**",
+            f"INR {estimated_loss:,.2f}"
+        )
+
+        st.info("""
+        The estimated attrition loss is calculated based on the Work Institute retention study,
+        which estimates employee replacement cost at approximately 33% of annual salary.
+        """)
+
+
         visualize(df)
 
     except TypeError:
         st.error("Failed: Please fill the data using the provided template format.")
 
     except ValueError:
-        st.error("Failed: Please upload data using csv file")
+        st.error("Failed: Please upload data using CSV or Excel template")
 
     except KeyError:
         st.error("Failed: Please ensure the column match the provided template format.")
@@ -317,7 +362,7 @@ tab1, tab2, tab3 = st.tabs(["Personal", "Batch", "About Us"])
 
 with tab1:
     st.header("Personal Prediction")
-    with st.form("personal"):
+    with st.form("personal", clear_on_submit=True):
         col1, col2 = st.columns(2)
         
         col1.markdown("**Biodata🙋**")
@@ -503,202 +548,20 @@ with tab1:
 with tab2:
     st.header("Group Prediction")
     col1, col2 = st.columns(2)
-    col1.markdown("**Upload Data(.csv)📤**")
-    template_df = pd.DataFrame({
-        "EmployeeID": [1],
-        "Age": [30],
-        "BusinessTravel": ["Travel_Rarely"],
-        "Gender": ["Male"],
-        "Department": ["Sales"],
-        "DistanceFromHome": [5],
-        "Education": [3],
-        "EducationField": ["Marketing"],
-        "JobLevel": [2],
-        "JobRole": ["Sales Executive"],
-        "MaritalStatus": ["Single"],
-        "MonthlyIncome": [5000],
-        "NumCompaniesWorked": [2],
-        "PercentSalaryHike": [15],
-        "StockOptionLevel": [1],
-        "TotalWorkingYears": [8],
-        "TrainingTimesLastYear": [2],
-        "YearsAtCompany": [5],
-        "YearsSinceLastPromotion": [1],
-        "YearsWithCurrManager": [3],
-        "EnvironmentSatisfaction": [3],
-        "JobSatisfaction": [4],
-        "WorkLifeBalance": [3],
-        "JobInvolvement": [3],
-        "PerformanceRating": [3],
-        "total_work_hours": [2100]
-    })
+    col1.markdown("**Template**")
 
-    dictionary_df = pd.DataFrame({
-    "Feature": [
-        "EmployeeID",
-        "Age",
-        "BusinessTravel",
-        "Gender",
-        "Department",
-        "DistanceFromHome",
-        "Education",
-        "EducationField",
-        "JobLevel",
-        "JobRole",
-        "MaritalStatus",
-        "MonthlyIncome",
-        "NumCompaniesWorked",
-        "PercentSalaryHike",
-        "StockOptionLevel",
-        "TotalWorkingYears",
-        "TrainingTimesLastYear",
-        "YearsAtCompany",
-        "YearsSinceLastPromotion",
-        "YearsWithCurrManager",
-        "EnvironmentSatisfaction",
-        "JobSatisfaction",
-        "WorkLifeBalance",
-        "JobInvolvement",
-        "PerformanceRating",
-        "total_work_hours"
-    ],
-    "Description": [
-        "Unique employee identifier",
-        "Employee age in years",
-        "How frequently the employees travelled for business purposes in the last year",
-        "Employee gender",
-        "Department employee works in",
-        "Distance from home in kms",
-        "Education Level",
-        "Field of education",
-        "Job level at company",
-        "Name of job role in company",
-        "Marital status of the employee",
-        "Monthly salary in INR",
-        "Total number of companies the employee has worked for",
-        "Percent salary hike for last year",
-        "Stock option level of the employee",
-        "Total number of years the employee has worked so far",
-        "Number of times training was conducted for this employee last year",
-        "Total number of years spent at the company by the employee",
-        "Number of years since last promotion",
-        "Number of years under current manager",
-        "Work Environment Satisfaction Level",
-        "Job Satisfaction Level",
-        "Work life balance level",
-        "Job Involvement Level",
-        "Performance rating for last year",
-        "Total work hours in 1 year"
-
-    ],
-    "Allowed Values": [
-        "Integer",
-        "18 - 65",
-        "Non-Travel\nTravel_Frequently\nTravel_Rarely",
-        "Male\nFemale",
-        "Sales\nHuman Resources\nResearch & Development",
-        "> 0",
-        "From Scale 1 to 5\n1 Below College\n2 College\n3 Bachelor\n4 Master\n5 Doctor",
-        "Human Resources\nLife Sciences\nMarketing\nMedical\nTechnical Degree\nOther",
-        "From Scale 1 to 5",
-        "Healthcare Representative\nHuman Resources\nLaboratory Technician\nManager\nManufacturing Director\nResearch Director\nResearch Scientist\nSales Executive\nSales Representative",
-        "Married\nSingle\nDivorced",
-        "> 0",
-        ">= 0",
-        "Min Value 11, Max Value 25",
-        "From scale 0 to 3",
-        ">= 0",
-        ">= 0",
-        ">= 0",
-        ">= 0",
-        ">= 0",
-        "From Scale 1 to 4\n1 Low\n2 Medium\n3 High\n4 Very High",
-        "From Scale 1 to 4\n1 Low\n2 Medium\n3 High\n4 Very High",
-        "From Scale 1 to 4\n1 Bad\n2 Good\n3 Better\n4 Best",
-        "From Scale 1 to 4\n1 Low\n2 Medium\n3 High\n4 Very High",
-        "From Scale 1 to 4\n1 Low\n2 Good\n3 Excellent\n4 Outstanding",
-        "> 0"
-    ]
-    })
-    
-    output = BytesIO()
-
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-
-        template_df.to_excel(writer, sheet_name='Template', index=False)
-        dictionary_df.to_excel(writer, sheet_name='Feature Dictionary', index=False)
-
-
-        # AMBIL WORKBOOK
-        workbook = writer.book
-
-        # AMBIL SHEET
-        template_ws = writer.sheets['Template']
-        dictionary_ws = writer.sheets['Feature Dictionary']
-
-        # HEADER STYLE
-        header_fill = PatternFill(
-            start_color="D9D9D9",
-            end_color="D9D9D9",
-            fill_type="solid"
-        )
-
-        for cell in dictionary_ws[1]:
-            cell.font = Font(bold=True)
-            cell.fill = header_fill
-
-        # AUTO WIDTH + WRAP TEXT
-        for column_cells in dictionary_ws.columns:
-
-            max_length = 0
-            column = column_cells[0].column
-
-            for cell in column_cells:
-
-                cell.alignment = Alignment(
-                    wrap_text=True,
-                    vertical='center',
-                    horizontal='left'
-                )
-
-                if cell.value:
-                    max_length = max(
-                        max_length,
-                        len(str(cell.value))
-                    )
-
-            adjusted_width = max_length + 5
-
-            dictionary_ws.column_dimensions[
-                get_column_letter(column)
-            ].width = adjusted_width
-
-        # AUTO ROW HEIGHT
-        for row in dictionary_ws.iter_rows():
-
-            max_lines = 1
-
-            for cell in row:
-
-                if cell.value:
-                    lines = str(cell.value).count('\n') + 1
-                    max_lines = max(max_lines, lines)
-
-            dictionary_ws.row_dimensions[
-                row[0].row
-            ].height = max_lines * 18
-
-
-    excel_data = output.getvalue()
+    template_file = load_template()
 
     col1.download_button(
         label="📥 Download Template",
-        data=excel_data,
+        data=template_file,
         file_name="employee_attrition_template.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     
-    df = col1.file_uploader("Upload data for prediction📥", accept_multiple_files=False, type="csv")
+    df = col1.file_uploader("**Upload data for prediction📥**",
+                            accept_multiple_files=False,
+                            type=["csv","xlsx"])
 
     if col1.button("Predict now!", type="primary"):
         with col1.spinner("Calculating Process. Please wait."):
