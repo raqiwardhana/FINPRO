@@ -3,10 +3,14 @@ import joblib
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(BASE_DIR, "assets", "employee_attrition_template.xlsx")
 
 @st.cache_data
 def load_template():
-    with open("./assets/employee_attrition_template.xlsx", "rb") as f:
+    with open(file_path, "rb") as f:
         return f.read() 
 
 def visualize(data):
