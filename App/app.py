@@ -8,8 +8,6 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(BASE_DIR, "assets", "employee_attrition_template.xlsx")
 logo = os.path.join(BASE_DIR, "assets", "logo.png")
-# model = os.path.join(BASE_DIR, "assets", "my_model.joblib")
-# column = os.path.join(BASE_DIR, "assets", "columns.pkl")
 
 @st.cache_data
 def load_template():
@@ -170,8 +168,8 @@ def visualize(data):
         st.plotly_chart(fig, width="stretch")
 
 def prediction(data):
-    model = joblib.load("/assets/my_model.joblib")
-    train_columns = joblib.load("/assets/columns.pkl")
+    model = joblib.load("App/assets/my_model.joblib")
+    train_columns = joblib.load("App/assets/columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -242,8 +240,8 @@ def prediction(data):
 
 def prediction_group(df):
     try:
-        model = joblib.load(model)
-        train_columns = joblib.load(column)
+        model = joblib.load("App/assets/my_model.joblib")
+        train_columns = joblib.load("App/assets/columns.pkl")
         
         if df.name.endswith(".csv"):
             final_df = pd.read_csv(df)
