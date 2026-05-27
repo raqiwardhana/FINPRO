@@ -3,22 +3,50 @@ import joblib
 import pandas as pd
 import numpy as np
 import plotly.express as px
-from io import BytesIO
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.utils import get_column_letter
 
 @st.cache_data
 def load_template():
-    with open("./template/employee_attrition_template.xlsx", "rb") as f:
+    with open("./assets/employee_attrition_template.xlsx", "rb") as f:
         return f.read() 
 
 def visualize(data):
+    st.divider()
+    st.subheader("Estimated Attrition Loss")
+    attrition_count = data['prediction'].value_counts().get("Yes", 0)
+
+    avg_monthly_income = data['MonthlyIncome'].mean()
+    avg_annual_salary = avg_monthly_income * 12
+
+    replacement_cost_per_employee = avg_annual_salary * 0.33
+    estimated_loss = attrition_count * replacement_cost_per_employee
+
+    col_a, col_b = st.columns(2)
+
+    col_a.metric(
+        "**Average Annual Salary**",
+        f"INR {avg_annual_salary:,.2f}",
+        border=True
+    )
+
+    col_b.metric(
+        "**Estimated Attrition Cost Loss**",
+        f"INR {estimated_loss:,.2f}",
+        border=True
+    )
+
+    st.info("""
+    The estimated attrition loss is calculated based on the Work Institute retention study,
+    which estimates employee replacement cost at approximately 33% of annual salary.
+    """)
+
+    # st.divider()
+    st.subheader("Employee Attrition Prediction")
     a, b, c= st.columns(3)
 
     a.metric("Employees", data['EmployeeID'].count(), border=True)
     b.metric("Attrition Prediction", data['prediction'].value_counts().get("Yes", 0), border=True)
     c.metric("Average Total Work Hours", round(data['total_work_hours'].mean()), border=True)
-    
+
     a,b = st.columns([2,1])
     a.write(data[['EmployeeID','total_work_hours','Age','YearsAtCompany','MaritalStatus','BusinessTravel','prediction']])
     @st.cache_data
@@ -135,8 +163,8 @@ def visualize(data):
         st.plotly_chart(fig, width="stretch")
 
 def prediction(data):
-    model = joblib.load("./my_model.joblib")
-    train_columns = joblib.load("./columns.pkl")
+    model = joblib.load("./assets/my_model.joblib")
+    train_columns = joblib.load("./assets/columns.pkl")
     
     df = pd.DataFrame([data])
     df['isMale'] = df['Gender'].map({'Male': 1, 'Female': 0})
@@ -207,8 +235,8 @@ def prediction(data):
 
 def prediction_group(df):
     try:
-        model = joblib.load("./my_model.joblib")
-        train_columns = joblib.load("./columns.pkl")
+        model = joblib.load("./assets/my_model.joblib")
+        train_columns = joblib.load("./assets/columns.pkl")
         
         if df.name.endswith(".csv"):
             final_df = pd.read_csv(df)
@@ -298,41 +326,6 @@ def prediction_group(df):
                                 margin-bottom: 2px;
                                 line-height:0;">Employees are predicted to remain with the company</p>
                         </div>""", unsafe_allow_html=True)
-        
-        # =========================
-        # ESTIMATED ATTRITION LOSS
-        # =========================
-
-        attrition_count = (y_pred == 1).sum()
-
-        avg_monthly_income = df['MonthlyIncome'].mean()
-        avg_annual_salary = avg_monthly_income * 12
-
-        replacement_cost_per_employee = avg_annual_salary * 0.33
-
-        estimated_loss = attrition_count * replacement_cost_per_employee
-
-        st.divider()
-        st.subheader("Estimated Attrition Loss")
-
-        col_a, col_b = st.columns(2)
-
-        col_a.metric(
-            "**Average Annual Salary**",
-            f"INR {avg_annual_salary:,.2f}"
-        )
-
-        col_b.metric(
-            "**Estimated Attrition Cost Loss**",
-            f"INR {estimated_loss:,.2f}"
-        )
-
-        st.info("""
-        The estimated attrition loss is calculated based on the Work Institute retention study,
-        which estimates employee replacement cost at approximately 33% of annual salary.
-        """)
-
-
         visualize(df)
 
     except TypeError:
@@ -570,7 +563,7 @@ with tab2:
     
 with tab3:
     st.header("Log Data")
-    st.image("./logo.png", width=200)
+    st.image("./assets/logo.png", width=200)
     st.markdown("""
     At **Log Data**, we believe that data is more than just numbers,  
     it is the key to smarter decisions, better strategies, and meaningful business growth.
