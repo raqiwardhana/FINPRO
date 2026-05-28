@@ -310,6 +310,20 @@ identified in dataframes
 - Lower retraining expenses
 - Improved workforce stability
 
+# Business Insight
+
+|Stay Probability|Interpretation|Recommended Action|
+| :--- | :--- | :--- |
+|>90%|Likely to stay|Employees in this category are likely to remain in the company and are considered relatively stable.|
+|70%-90%|Need monitoring|HR is recommended to periodically monitor employees in this category to prevent potential attrition risks.|
+|<70%|High attrition risk|Preventive retention actions are recommended to reduce the possibility of employees leaving the company.|
+
+|Attrition Probability|Interpretation|Recommended Action|
+| :--- | :--- | :--- |
+|>90%|High attrition risk|Immediate preventive measures are recommended to reduce the likelihood of employee resignation.|
+|70%-90%|Need monitoring|HR is advised to monitor employees in this category and evaluate potential risk factors.|
+|<70%|Low chances of attrition|Employees in this category are considered to have a relatively low probability of leaving the company.|
+
 # Recommendation
 
 - Use more updated employee data
@@ -383,7 +397,7 @@ Dependencies:
 - Maintenance requirement
 
 # How to use
-## Personal
+## Individual
 - Enter an individual employee data needed to determine whether the employee will experience attrition. Users can immediately see the prediction result and its probability.
 - If the result box color is red, the employee is predicted to leave the company. If it's green, the employee is predicted to stay.
 
