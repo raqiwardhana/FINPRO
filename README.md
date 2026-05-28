@@ -133,7 +133,7 @@ Employee attrition is a universal business challenge that directly affects produ
     - Single
     - Overwork
     - Male
-<img alt="Percentage of retention with bivariate" src="![image](https://drive.google.com/uc?export=view&id=1aqIlugCgj4B3nxLjH7wzY3uibcyKhCrF)" />
+<img alt="Percentage of retention with bivariate" src=https://drive.google.com/uc?export=view&id=1aqIlugCgj4B3nxLjH7wzY3uibcyKhCrF/>
 
 
 
