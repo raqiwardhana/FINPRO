@@ -297,7 +297,7 @@ identified in dataframes
 
 |Metric|Before|AFter|Improvement|
 | :--- | :--- | :--- | :--- |
-|Attrition Rate|16.1%|10%|![up](https://img.shields.io/badge/▼37.9%-brightgreen)|
+|Attrition Rate|16.1%|10%|![up](https://img.shields.io/badge/change-▼37.9%25-brightgreen)|
 |Attrition Cost|263 Million INR|163.35 Million INR|![up](https://img.shields.io/badge/▼99.65%20Million%20INR-brightgreen)|
 
 - Reduced employee turnover
@@ -306,6 +306,7 @@ identified in dataframes
 - Improved workforce stability
 
 # Recommendation
+
 - Use more updated employee data
 - Collect larger and more diverse employee data
 -Improve detection of false negative cases
@@ -328,4 +329,59 @@ Dependencies:
 - `XlsxWriter`
 - `openpyxl`
 - `xlrd`
-==W=I=P==W=I=P==W=I=P==
+
+# Monitoring & Maintenance Strategy
+- Model performance monitoring
+
+    - monitored prediction model regularly using evaluation metrics such as:
+
+        - Precision
+        - Recall
+        - F1-Score
+
+- Data quality monitoring
+
+    Regularly check:
+
+    - No missing values
+    - Correct data formats
+    - Consistent feature distributions
+    - No duplicated records
+
+`Poor data quality may reduce prediction accuracy and lead to unreliable results.`
+
+- Periodic model retraining
+
+    The model should be retrained periodically using newer employee data to maintain relevance and accuracy.
+
+    - Every 3~6 months
+    - When significant performance drops are detected
+    - When company workforce patterns change significantly
+
+
+- System maintenance
+
+    The application and supporting infrastructure should be regularly by:
+    - Updating dependencies and libraries
+    - Fixing bugs and system issues
+    - Monitoring application uptime
+    - Improving UI/UX when necessary
+
+[click here](https://attrictionbylogdata.streamlit.app) to try the ML
+
+# Challenges & Limitation
+
+- Limited dataset
+- Data quality depedency
+- Changing employess behaviour
+- Risk of error prediction
+- Maintenance requirement
+
+# How to use
+## Personal
+- Enter an individual employee data needed to determine whether the employee will experience attrition. Users can immediately see the prediction result and its probability.
+- If the result box color is red, the employee is predicted to leave the company. If it's green, the employee is predicted to stay.
+
+## Group
+- Uploaded employee group data with the same structure and format as the original dataset.
+- This feature provides an overall attrition prediction summary while also displaying detailed prediction results for each employee individually, including their employee information and predicted attrition status.
