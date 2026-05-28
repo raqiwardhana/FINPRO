@@ -133,7 +133,8 @@ Employee attrition is a universal business challenge that directly affects produ
     - Single
     - Overwork
     - Male
-<img alt="Percentage of retention with bivariate" src=https://drive.google.com/uc?export=view&id=1aqIlugCgj4B3nxLjH7wzY3uibcyKhCrF/>
+
+<img alt="Percentage of retention with bivariate" src="https://drive.google.com/uc?export=view&id=1aqIlugCgj4B3nxLjH7wzY3uibcyKhCrF">
 
 
 
@@ -160,7 +161,6 @@ identified in dataframes
 - drop data for having have constant value, StandardHours, EmployeeCount, Over18
 - droping EmployeeID becasue irrelevant
 - droping data with low correlation (e.g.'Gender', 'MonthlyIncome', 'NumCompaniesWorked', 'PercentSalaryHike, etc.')
-<img alt="Percentage of retention with bivariate" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/Future%20relation%20scale.png" />
 
 # Modeling
 
@@ -171,8 +171,10 @@ identified in dataframes
     - Test Data: 40%
 
 - Scaling: Standarixation
+
 - Data Imbalance
-<img alt="Comparasion of before and after Attrition Distribution using SMOTE" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/Attrition_Distribution_BeforeSMOTE.png"/>
+
+    - SMOTE was initially tested to handle class imbalance. However, it indicating potential overfitting. Therefore, the original retained for model training.
 
 ## Baseline Model
 - Using Logistis regression without the hyperparameter tuning for get the initial model performance
@@ -246,7 +248,7 @@ identified in dataframes
 > ![down](https://img.shields.io/badge/Red-red) = Decreasing
 
 ## Feature Importance
-<img alt="Feature importance score" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/Feature_Importance.png"/>
+<img alt="Feature importance score" src="https://drive.google.com/uc?export=view&id=1jbFNXQo8TzsWR-s6sJJZw7ozY0V2K0yI">
 
 - The business insight:
 
@@ -267,7 +269,8 @@ identified in dataframes
 
 ### SHAP
 
-<img alt="SHAP graph" src="https://github.com/raqiwardhana/FINPRO/blob/main/Asset/SHAP_Graph.png"/>
+<img alt="SHAP graph" src="https://drive.google.com/uc?export=view&id=1kQy7HbBBx1Iitg4anxTedt4H-qUvg04W"/>
+
 
 - The SHAP results doesn't directly indicate data leakage
 - Identified features remain reasonable for an employee attrition problem.
@@ -369,7 +372,7 @@ Dependencies:
     - Monitoring application uptime
     - Improving UI/UX when necessary
 
-[click here](https://attrictionbylogdata.streamlit.app) to try the ML
+[click here](https://attrictionbylogdata.streamlit.app/) to try the ML
 
 # Challenges & Limitation
 
